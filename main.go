@@ -1,15 +1,12 @@
 package main
 
 import (
-	"bufio"
-	"context"
-	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"calendar/internal/agent"
 	"calendar/internal/database"
+	"calendar/internal/server"
 )
 
 func main() {
@@ -40,28 +37,6 @@ func main() {
 		log.Fatalf("agent: %v", err)
 	}
 
-	// Single conversation session for the REPL
-	conv := agent.NewConversation()
-
-	fmt.Println("Calendar Agent ready. Type your message (Ctrl+C to exit).")
-	fmt.Println("---")
-
-	scanner := bufio.NewScanner(os.Stdin)
-	for {
-		fmt.Print("You: ")
-		if !scanner.Scan() {
-			break
-		}
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" {
-			continue
-		}
-
-		reply, err := a.Reply(context.Background(), conv, line)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			continue
-		}
-		fmt.Printf("Agent: %s\n\n", reply)
-	}
+	// start and run the http server
+	server.StartServer(a)
 }
