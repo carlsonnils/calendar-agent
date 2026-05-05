@@ -126,6 +126,29 @@ func New() (*Agent, error) {
 }
 
 // ============================================================
+// HTTP Handler
+// ============================================================
+
+// Session manager
+
+// Conversation manager
+
+// take session/conversation id in request, load conversation history
+// respond with agent reply
+func (a *Agent) ReplyHandler(w http.ResponseWriter, r *http.Request) {
+	// read request body
+
+	// load converation history
+	
+	// ask agent for reply
+
+	// save messages to conversation history
+
+	// respond with agent reply
+	w.Write([]byte("hi from the agent"))
+}
+
+// ============================================================
 // Conversation
 // ============================================================
 
