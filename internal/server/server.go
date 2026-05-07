@@ -59,5 +59,6 @@ func serveHTTPS(muxer *http.ServeMux) {
 
 // return files from ui directory for home path
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("server.HomeHandler request path: ", r.RequestURI)
 	http.ServeFileFS(w, r, os.DirFS(uiPath), r.URL.EscapedPath())
 }
