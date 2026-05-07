@@ -5,5 +5,17 @@
     </head>
     <body>
         <h1>Calendar Agent</h1>
+        <div id="conversations"></div>
+        <template id="conversation-button-template">
+            <div class="conversation-button">
+                <div class="session-id" style="display: none;"></div>
+                <div class="name"></div>
+                <div class="updated-at"></div>
+                <div class="message-count"></div>
+                <div class="history" style="display: none;"></div>
+                <div class="created-at" style="display: none;"></div>
+            </div>
+        </template>
+        <script src="index.js" type="module"></script>
     </body>
 </html>
