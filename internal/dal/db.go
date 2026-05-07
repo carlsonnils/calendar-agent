@@ -164,6 +164,25 @@ func (j jsonTags) Scan(src any) error {
 	return json.Unmarshal([]byte(raw), j.ptr)
 }
 
+// rawHistory scans the JSON array stored in the history column into json.RawMessage
+type rawHistory struct{ ptr *json.RawMessage }
+
+func (h rawHistory) Scan(src any) error {
+    if src == nil {
+        *h.ptr = nil
+        return nil
+    }
+    switch v := src.(type) {
+    case string:
+        *h.ptr = json.RawMessage(v)
+    case []byte:
+        *h.ptr = json.RawMessage(v) // safe: database/sql won't reuse this slice
+    default:
+        return fmt.Errorf("rawHistory.Scan: expected string or []byte, got %T", src)
+    }
+    return nil
+}
+
 // ============================================================
 // Pointer helpers for building INSERT/UPDATE args
 // ============================================================
