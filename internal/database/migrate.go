@@ -18,7 +18,7 @@ var DB *sql.DB
 
 // Open opens (or creates) the SQLite database at the given path,
 // sets the required PRAGMAs, and runs any pending migrations.
-func Open(dbPath string) error {
+func Open(dbPath string) (*sql.DB, error) {
 	// CGo SQLite driver — the DSN supports query parameters for PRAGMAs
 	// that must be set at connection time (e.g. _foreign_keys).
 	dsn := fmt.Sprintf(
@@ -28,7 +28,7 @@ func Open(dbPath string) error {
 
 	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
-		return fmt.Errorf("open db: %w", err)
+		return db, fmt.Errorf("open db: %w", err)
 	}
 
 	// Single writer; multiple readers via WAL. Keep one connection in the
@@ -38,17 +38,17 @@ func Open(dbPath string) error {
 	db.SetConnMaxLifetime(0)
 
 	if err := db.Ping(); err != nil {
-		return fmt.Errorf("ping db: %w", err)
+		return db, fmt.Errorf("ping db: %w", err)
 	}
 
 	DB = db
 
 	if err := runMigrations(db, migrationsDir()); err != nil {
-		return fmt.Errorf("migrations: %w", err)
+		return DB, fmt.Errorf("migrations: %w", err)
 	}
 
 	log.Println("database ready:", dbPath)
-	return nil
+	return DB, nil
 }
 
 // Close closes the database. Call via defer after Open() succeeds.

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"calendar/internal/agent"
+	"calendar/internal/dal"
 	"calendar/internal/database"
 	"calendar/internal/server"
 )
@@ -26,10 +27,14 @@ func main() {
 	}
 
 	// Open and migrate database
-	if err := database.Open(dbPath); err != nil {
+	db, err := database.Open(dbPath)
+	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}
 	defer database.Close()
+
+	// set dal database
+	dal.DB = db
 
 	// Create the agent
 	a, err := agent.New()
