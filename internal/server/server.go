@@ -17,6 +17,7 @@ func StartServer(a *agent.Agent) {
     mux := http.NewServeMux()
     mux.HandleFunc("/", HomeHandler)
     mux.HandleFunc("POST /api/chat", a.ReplyHandler)
+    mux.HandleFunc("GET /api/conversations", ListConversationsHandler)
 
     go serveHTTP(mux)
     // go serveHTTPS(mux)
