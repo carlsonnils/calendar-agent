@@ -3,7 +3,10 @@
 // time.Time at the boundary. NULLable columns use pointer types.
 package models
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // ============================================================
 // Project
@@ -162,4 +165,22 @@ type AgendaItem struct {
 	At        time.Time `json:"at"` // start_at / due_at / remind_at
 	ProjectID *int64    `json:"project_id"`
 	Extra     string    `json:"extra"` // status for tasks, location for events
+}
+
+// ============================================================
+// Conversation
+// ============================================================
+
+//
+// The History field is stored as a JSON blob — the same []Message slice the
+// agent package uses. The dal package doesn't import agent to avoid a cycle,
+// so it works with []byte / json.RawMessage at the boundary.
+
+type Conversation struct {
+	SessionID    string 		 `json:"session_id"`
+	Name    	 string			 `json:"name"`
+	History      json.RawMessage `json:"history"` // []agent.Message serialised
+	MessageCount int			 `json:"message_count"`
+	CreatedAt    time.Time		 `json:"created_at"`
+	UpdatedAt    time.Time		 `json:"updated_at"`
 }
