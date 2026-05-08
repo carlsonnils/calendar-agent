@@ -22,6 +22,7 @@ func ListConversationsHandler(w http.ResponseWriter, r *http.Request) {
 	// marshal the conversations into []byte
 	conversationsBytes, err := json.Marshal(conversations)
 	if err != nil {
+		fmt.Println("ListConversationsHandler marshal conversations:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
