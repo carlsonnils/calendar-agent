@@ -54,25 +54,13 @@ func buildSystemPrompt() string {
 // Message represents a single turn in the conversation history.
 type Message struct {
 	Role    string    `json:"role"`
-	Content []Content `json:"content"`
-}
+	Content string `json:"content,omitempty"`
 
-// Content is a polymorphic content block.
-// Type is one of: "text", "tool_use", "tool_result".
-type Content struct {
-	Type string `json:"type"`
+	// for assistant messages
+	ToolCalls []ToolCall `json:"tool_calls,omitempty"`
 
-	// text block
-	Text string `json:"text,omitempty"`
-
-	// tool_use block (model -> us)
-	ID    string          `json:"id,omitempty"`
-	Name  string          `json:"name,omitempty"`
-	Input json.RawMessage `json:"input,omitempty"`
-
-	// tool_result block (us -> model)
-	ToolUseID string `json:"tool_use_id,omitempty"`
-	Content   string `json:"content,omitempty"`
+	// for tool messages
+	ToolCallID string `json:"tool_call_id,omitempty"`
 }
 
 // apiRequest is the body sent to /v1/chat/completions.
@@ -210,7 +198,7 @@ func (a *Agent) Reply(ctx context.Context, conv *Conversation, userMessage strin
 	// Append the new user turn
 	conv.History = append(conv.History, Message{
 		Role:    "user",
-		Content: []Content{{Type: "text", Text: userMessage}},
+		Content: userMessage,
 	})
 
 	// Agentic loop
@@ -229,9 +217,8 @@ func (a *Agent) Reply(ctx context.Context, conv *Conversation, userMessage strin
 		// Append the full assistant message to history (required by the API)
 		conv.History = append(conv.History, Message{
 			Role:    resp.Choices[0].Message.Role,
-			Content: []Content{
-				Content{ Type: "text", Text: resp.Choices[0].Message.Content },
-			},
+			Content: resp.Choices[0].Message.Content,
+			ToolCalls: resp.Choices[0].Message.ToolCalls,
 		})
 
 		// If no tool calls, we are done
@@ -240,7 +227,6 @@ func (a *Agent) Reply(ctx context.Context, conv *Conversation, userMessage strin
 		}
 
 		// Process all tool_use blocks in this response
-		toolResults := make([]Content, 0, len(resp.Choices[0].Message.ToolCalls))
 		for _, tc := range resp.Choices[0].Message.ToolCalls {
 			log.Printf("agent: tool_use name=%s id=%s",  tc.Function.Name, tc.ID)
 			result, err := DispatchTool(ctx, tc.Function.Name, []byte(tc.Function.Arguments))
@@ -248,21 +234,13 @@ func (a *Agent) Reply(ctx context.Context, conv *Conversation, userMessage strin
 				result = jsonErr(err.Error())
 			}
 
-			log.Printf("agent: tool_result id=%s result_len=%d", tc.ID, len(result))
-
-			toolResults = append(toolResults, Content{
-				Type:      "tool_result",
-				ToolUseID: tc.ID,
-				Content:   result,
+			// Append all tool results as a single user turn
+			conv.History = append(conv.History, Message{
+				Role:    "tool",
+				Content: result,
+				ToolCallID: tc.ID,
 			})
 		}
-
-		// Append all tool results as a single user turn
-		conv.History = append(conv.History, Message{
-			Role:    "tool",
-			Content: toolResults,
-		})
-		log.Println("agent.Reply tool call added to conv: ", conv.History)
 	}
 
 	return "", fmt.Errorf("agent: exceeded max tool rounds (%d)", maxToolRounds)
@@ -278,9 +256,7 @@ func (a *Agent) callAPI(ctx context.Context, history []Message) (*apiResponse, e
 		MaxCompletionTokens: maxCompletionTokens,
 		Messages:  append(history, Message{
 			Role: "system",
-			Content: []Content{
-				Content{ Type: "text", Text: buildSystemPrompt() },
-			},
+			Content: buildSystemPrompt(),
 		}),
 		Tools:     AllTools,
 	}
