@@ -1,22 +1,61 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Agent</title>
-        <link rel="stylesheet" href="conversations.css">
+        <title>Calendar</title>
+        <link rel="stylesheet" type="text/css" href="display.css">
+        <link rel="stylesheet" type="text/css" href="layout.css">
+        <link rel="stylesheet" type="text/css" href="theme.css">
     </head>
     <body>
-        <h1>Calendar Agent</h1>
-        <div id="conversations"></div>
-        <template id="conversation-button-template">
-            <div class="conversation-button">
-                <div class="session-id" style="display: none;"></div>
-                <div class="name"></div>
-                <div class="updated-at"></div>
-                <div class="message-count"></div>
-                <div class="history" style="display: none;"></div>
-                <div class="created-at" style="display: none;"></div>
+        <div id="app" class="app">
+            <div id="app-body" class="app-body">
+                <div id="conversation" class="conversation">
+                    <!--
+                        BASIC UI
+                        text bubbles from each "person"
+                        the users messages are on the right
+                        the chat's are on the left
+                        the user's chats are the accent color, maybe shadowed?
+                        the chat's are grey, maybe shadowed with accent color
+
+                        the chat wil consist of "lines" or blocks.
+                        only one block can be owned by one "person".
+                        each block will have its own css styles, split into respective files.
+                    -->
+                    <div id="welcome-message" class="welcome-message">What do you have today?</div>
+                    <template id="chat-block-template">
+                        <div class="message-block chat-block">
+                            <div class="time-block chat-time">
+                                <div class="time-part"></div>
+                                <div class="date-part"></div>
+                            </div>
+                            <div class="message-text chat-message"></div>
+                        </div>
+                    </template>
+                    <template id="user-block-template">
+                        <div class="message-block user-block">
+                            <div class="time-block user-time">
+                                <div class="time-part"></div>
+                                <div class="date-part"></div>
+                            </div>
+                            <div class="message-text user-message"></div>
+                        </div>
+                    </template>
+                    <div id="chat-begining" class="chat-begining hidden">Chat Begining</div>
+                    <div id="messages" class="messages" style="display: none;"></div>
+                </div>
+                <div id="prompt" class="prompt">
+                    <div id="prompt-input"  class="prompt-input">
+                        <input id="prompt-text" type="text" placeholder="How can I help? " class="prompt-text">
+                    </div>
+                    <div id="prompt-buttons" class="prompt-buttons">
+                        <button class="util-button">Add File</button>
+                        <button class="util-button">Extend Thninking</button>
+                        <button id="submit-prompt">Submit</button>
+                    </div>
+                </div>
             </div>
-        </template>
+        </div>
         <script src="index.js" type="module"></script>
     </body>
 </html>
