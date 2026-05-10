@@ -54,7 +54,7 @@ function updateBlock(t, m) {
 
     // update block
     updateBlockTime(block.querySelector(".time-block"));
-    block.querySelector(".message-text").innerHTML = m;
+    block.querySelector(".message-text").innerHTML = m.replace(/\n/g, '<br>');
 
     // add to messages
     document.querySelector("#messages").append(block);

@@ -54,6 +54,7 @@ body {
 .messages {
     display: none; /* turned to flex after first prompt submitted */
     min-width: min(100%, 750px);
+    max-width: min(100%, 1200px);
     flex-direction: column;
     justify-content: center;
     padding: 1em;
