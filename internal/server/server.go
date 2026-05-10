@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -14,9 +15,13 @@ var (
 
 // run http server to accept http requests to the agent
 func StartServer(a *agent.Agent) {
+	// one conversation per server
+	conv := agent.NewConversation()
+
+	// apply routes to the request multiplexer
     mux := http.NewServeMux()
     mux.HandleFunc("/", HomeHandler)
-    mux.HandleFunc("POST /api/chat", a.ReplyHandler)
+    mux.HandleFunc("POST /api/chat", a.ReplyHandler(context.Background(), conv))
     mux.HandleFunc("GET /api/conversations", ListConversationsHandler)
 
     go serveHTTP(mux)

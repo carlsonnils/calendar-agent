@@ -115,9 +115,9 @@ type Agent struct {
 
 // New creates a new Agent. API key is read from ANTHROPIC_API_KEY env var.
 func New() (*Agent, error) {
-	key := os.Getenv("ANTHROPIC_API_KEY")
+	key := os.Getenv("XAI_API_KEY")
 	if key == "" {
-		return nil, fmt.Errorf("ANTHROPIC_API_KEY environment variable not set")
+		return nil, fmt.Errorf("XAI_API_KEY environment variable not set")
 	}
 	return &Agent{
 		client: &http.Client{Timeout: 60 * time.Second},
@@ -129,19 +129,43 @@ func New() (*Agent, error) {
 // HTTP Handler
 // ============================================================
 
+type chatRequest struct {
+	Message `json:"message"`
+}
+
 // take session/conversation id in request, load conversation history
 // respond with agent reply
-func (a *Agent) ReplyHandler(w http.ResponseWriter, r *http.Request) {
-	// read request body
+func (a *Agent) ReplyHandler(ctx context.Context, conv *Conversation) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// read request body
+        log.Println("agent.ReplyHandler: ", r.URL.Host, r.URL.RequestURI())
+		defer r.Body.Close()
 
-	// load converation history
-	
-	// ask agent for reply
+		var cr chatRequest
+		err := json.NewDecoder(r.Body).Decode(&cr)
+		if err != nil {
+			w.Write([]byte("error decoding request body"))
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		log.Println("agent.ReplyHandler: chat message :", cr)
 
-	// save messages to conversation history
+		// load converation history
+		
+		// ask agent for reply
+		// reply, err := a.Reply(context.Background(), conv, cr.Message)
+		// if err != nil {
+		// 	w.Write([]byte("error decoding request body"))
+		// 	w.WriteHeader(http.StatusInternalServerError)
+		// 	return
+		// }
 
-	// respond with agent reply
-	w.Write([]byte("hi from the agent"))
+		// save messages to conversation history
+
+		// respond with agent reply
+		// w.Write([]byte(reply))
+		w.Write([]byte(`{ "message": "hi from the calendar agent" }`))
+	}
 }
 
 // ============================================================
