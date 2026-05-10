@@ -25,9 +25,9 @@ import (
 // The loop is capped at maxToolRounds to prevent runaway billing.
 
 const (
-	anthropicAPIURL = "https://api.anthropic.com/v1/messages"
-	anthropicModel  = "claude-haiku-4-5-20251001"
-	maxTokens       = 1024
+	xaiAPIURL = "https://api.x.ai/v1/chat/completions"
+	xaiModel  = "grok-4-1-fast-reasoning"
+	maxCompletionTokens       = 1024
 	maxToolRounds   = 10
 )
 
@@ -75,27 +75,49 @@ type Content struct {
 	Content   string `json:"content,omitempty"`
 }
 
-// apiRequest is the body sent to /v1/messages.
+// apiRequest is the body sent to /v1/chat/completions.
 type apiRequest struct {
 	Model     string    `json:"model"`
-	MaxTokens int       `json:"max_tokens"`
-	System    string    `json:"system"`
+	MaxCompletionTokens int       `json:"max_completion_tokens"`
 	Messages  []Message `json:"messages"`
 	Tools     []Tool    `json:"tools"`
 }
 
-// apiResponse is the body returned by /v1/messages.
+// apiResponse tool call Fucntion
+type ToolCallFunction struct {
+	Arguments string `json:"arguments"`
+	Name string `json:"name"`
+}
+
+// apiResponse Tool Call
+type ToolCall struct {
+	Function ToolCallFunction `json:"function"`
+	ID string `json:"id"`
+	Index int `json:"index,omitempty"`
+	Type string `json:"type,omitempty"`
+}
+
+// apiResponce choice message
+type ChoiceMessage struct {
+	Content string `json:"content,omitempty"`
+	Role string `json:"role"`
+	ToolCalls []ToolCall `json:"tool_calls,omitempty"`
+}
+
+// apiResponse Choices type
+type Choice struct {
+	FinishReason string `json:"finish_reason,omitempty"`
+	Index int `json:"index"`
+	Message ChoiceMessage `json:"message"`
+}
+
+// apiResponse is the body returned by /v1/chat/completions.
 type apiResponse struct {
-	ID         string    `json:"id"`
-	Type       string    `json:"type"`
-	Role       string    `json:"role"`
-	Content    []Content `json:"content"`
-	StopReason string    `json:"stop_reason"`
-	Usage      struct {
-		InputTokens  int `json:"input_tokens"`
-		OutputTokens int `json:"output_tokens"`
-	} `json:"usage"`
-	Error *apiError `json:"error,omitempty"`
+	Choices []Choice `json:"choices`
+	Created int `json:"created"`
+	ID string `json:"id"`
+	Model string `json:"model"`
+	Object string `json:"object"`
 }
 
 type apiError struct {
@@ -130,7 +152,11 @@ func New() (*Agent, error) {
 // ============================================================
 
 type chatRequest struct {
-	Message `json:"message"`
+	Message string `json:"message"`
+}
+
+type chatResponse struct {
+	Message string `json:"message"`
 }
 
 // take session/conversation id in request, load conversation history
@@ -144,27 +170,22 @@ func (a *Agent) ReplyHandler(ctx context.Context, conv *Conversation) func(w htt
 		var cr chatRequest
 		err := json.NewDecoder(r.Body).Decode(&cr)
 		if err != nil {
-			w.Write([]byte("error decoding request body"))
-			w.WriteHeader(http.StatusInternalServerError)
+			log.Println("agent.ReplyHandler error: ", err)
+			json.NewEncoder(w).Encode(&chatRequest{Message: "error decoding request body"})
 			return
 		}
 		log.Println("agent.ReplyHandler: chat message :", cr)
 
-		// load converation history
-		
 		// ask agent for reply
-		// reply, err := a.Reply(context.Background(), conv, cr.Message)
-		// if err != nil {
-		// 	w.Write([]byte("error decoding request body"))
-		// 	w.WriteHeader(http.StatusInternalServerError)
-		// 	return
-		// }
-
-		// save messages to conversation history
+		reply, err := a.Reply(context.Background(), conv, cr.Message)
+		if err != nil {
+			log.Println("agent.ReplyHandler error: ", err)
+			json.NewEncoder(w).Encode(&chatRequest{Message: "error getting reply"})
+			return
+		}
 
 		// respond with agent reply
-		// w.Write([]byte(reply))
-		w.Write([]byte(`{ "message": "hi from the calendar agent" }`))
+		json.NewEncoder(w).Encode(&chatRequest{Message: reply})
 	}
 }
 
@@ -193,54 +214,55 @@ func (a *Agent) Reply(ctx context.Context, conv *Conversation, userMessage strin
 	})
 
 	// Agentic loop
-	for round := 0; round < maxToolRounds; round++ {
+	// for round := 0; round < maxToolRounds; round++ {
+	for round := 0; round < 2; round++ {
 		resp, err := a.callAPI(ctx, conv.History)
 		if err != nil {
 			return "", fmt.Errorf("API call: %w", err)
 		}
 
 		// Log token usage for cost monitoring on the Pi
-		log.Printf("agent: round=%d stop=%s tokens(in=%d out=%d)",
-			round, resp.StopReason, resp.Usage.InputTokens, resp.Usage.OutputTokens)
+		log.Printf("agent: round=%d stop=%s",
+			round, resp.Choices[0].FinishReason)
+		log.Println("agent.Reply llm response choices: ", resp.Choices)
 
 		// Append the full assistant message to history (required by the API)
 		conv.History = append(conv.History, Message{
-			Role:    "assistant",
-			Content: resp.Content,
+			Role:    resp.Choices[0].Message.Role,
+			Content: []Content{
+				Content{ Type: "text", Text: resp.Choices[0].Message.Content },
+			},
 		})
 
 		// If no tool calls, we are done
-		if resp.StopReason == "end_turn" || !hasToolUse(resp.Content) {
-			return extractText(resp.Content), nil
+		if resp.Choices[0].FinishReason == "stop" || resp.Choices[0].FinishReason != "tool_calls" {
+			return extractText(resp.Choices), nil
 		}
 
 		// Process all tool_use blocks in this response
-		toolResults := make([]Content, 0, len(resp.Content))
-		for _, block := range resp.Content {
-			if block.Type != "tool_use" {
-				continue
-			}
-			log.Printf("agent: tool_use name=%s id=%s", block.Name, block.ID)
-
-			result, err := DispatchTool(ctx, block.Name, block.Input)
+		toolResults := make([]Content, 0, len(resp.Choices[0].Message.ToolCalls))
+		for _, tc := range resp.Choices[0].Message.ToolCalls {
+			log.Printf("agent: tool_use name=%s id=%s",  tc.Function.Name, tc.ID)
+			result, err := DispatchTool(ctx, tc.Function.Name, []byte(tc.Function.Arguments))
 			if err != nil {
 				result = jsonErr(err.Error())
 			}
 
-			log.Printf("agent: tool_result id=%s result_len=%d", block.ID, len(result))
+			log.Printf("agent: tool_result id=%s result_len=%d", tc.ID, len(result))
 
 			toolResults = append(toolResults, Content{
 				Type:      "tool_result",
-				ToolUseID: block.ID,
+				ToolUseID: tc.ID,
 				Content:   result,
 			})
 		}
 
-		// Append all tool results as a single user turn (Anthropic API requirement)
+		// Append all tool results as a single user turn
 		conv.History = append(conv.History, Message{
-			Role:    "user",
+			Role:    "tool",
 			Content: toolResults,
 		})
+		log.Println("agent.Reply tool call added to conv: ", conv.History)
 	}
 
 	return "", fmt.Errorf("agent: exceeded max tool rounds (%d)", maxToolRounds)
@@ -252,10 +274,14 @@ func (a *Agent) Reply(ctx context.Context, conv *Conversation, userMessage strin
 
 func (a *Agent) callAPI(ctx context.Context, history []Message) (*apiResponse, error) {
 	reqBody := apiRequest{
-		Model:     anthropicModel,
-		MaxTokens: maxTokens,
-		System:    buildSystemPrompt(),
-		Messages:  history,
+		Model:     xaiModel,
+		MaxCompletionTokens: maxCompletionTokens,
+		Messages:  append(history, Message{
+			Role: "system",
+			Content: []Content{
+				Content{ Type: "text", Text: buildSystemPrompt() },
+			},
+		}),
 		Tools:     AllTools,
 	}
 
@@ -264,13 +290,13 @@ func (a *Agent) callAPI(ctx context.Context, history []Message) (*apiResponse, e
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, anthropicAPIURL, bytes.NewReader(bodyBytes))
+	req, err := http.NewRequestWithContext(
+		ctx, http.MethodPost, xaiAPIURL, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, fmt.Errorf("build request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-api-key", a.apiKey)
-	req.Header.Set("anthropic-version", "2023-06-01")
+	req.Header.Set("Authorization", "Bearer "+a.apiKey)
 
 	httpResp, err := a.client.Do(req)
 	if err != nil {
@@ -292,10 +318,6 @@ func (a *Agent) callAPI(ctx context.Context, history []Message) (*apiResponse, e
 		return nil, fmt.Errorf("unmarshal response: %w", err)
 	}
 
-	if apiResp.Error != nil {
-		return nil, fmt.Errorf("API error [%s]: %s", apiResp.Error.Type, apiResp.Error.Message)
-	}
-
 	return &apiResp, nil
 }
 
@@ -303,21 +325,10 @@ func (a *Agent) callAPI(ctx context.Context, history []Message) (*apiResponse, e
 // Helpers
 // ============================================================
 
-func hasToolUse(content []Content) bool {
-	for _, c := range content {
-		if c.Type == "tool_use" {
-			return true
-		}
-	}
-	return false
-}
-
-func extractText(content []Content) string {
+func extractText(choices []Choice) string {
 	var result string
-	for _, c := range content {
-		if c.Type == "text" {
-			result += c.Text
-		}
+	for _, c := range choices {
+		result += c.Message.Content
 	}
 	return result
 }
