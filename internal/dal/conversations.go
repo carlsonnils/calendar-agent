@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"calendar/internal/models"
+	"fake.com/nilspcarlson/internal/models"
 )
 
 // conversations.go persists agent conversation history to SQLite so sessions

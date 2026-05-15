@@ -6,15 +6,15 @@ import (
 	"net/http"
 	"os"
 	
-	"calendar/internal/agent"
+	"fake.com/nilspcarlson/internal/agent"
 )
 
 var (
-	uiPath = "ui"
+	UiPath string
 )
 
-// run http server to accept http requests to the agent
-func StartServer(a *agent.Agent) {
+// Build muxer
+func BuildMuxer(a *agent.Agent) *http.ServeMux {
 	// one conversation per server
 	conv := agent.NewConversation()
 
@@ -23,6 +23,14 @@ func StartServer(a *agent.Agent) {
     mux.HandleFunc("/", HomeHandler)
     mux.HandleFunc("POST /api/chat", a.ReplyHandler(context.Background(), conv))
     mux.HandleFunc("GET /api/conversations", ListConversationsHandler)
+
+    return mux
+}
+
+// run http server to accept http requests to the agent
+func StartServer(a *agent.Agent) {  
+    // build serve muxer
+    mux := BuildMuxer(a)
 
     go serveHTTP(mux)
     // go serveHTTPS(mux)
@@ -65,5 +73,5 @@ func serveHTTPS(muxer *http.ServeMux) {
 // return files from ui directory for home path
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("server.HomeHandler request path: ", r.RequestURI)
-	http.ServeFileFS(w, r, os.DirFS(uiPath), r.URL.EscapedPath())
+	http.ServeFileFS(w, r, os.DirFS(UiPath), r.URL.EscapedPath())
 }

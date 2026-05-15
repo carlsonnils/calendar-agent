@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"calendar/internal/dal"
-	"calendar/internal/models"
+	"fake.com/nilspcarlson/internal/dal"
+	"fake.com/nilspcarlson/internal/models"
 )
 
 // handlers.go maps every tool name to a function that:

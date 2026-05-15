@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"calendar/internal/models"
+	"fake.com/nilspcarlson/internal/models"
 )
 
 // ============================================================

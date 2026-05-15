@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"calendar/internal/dal"
+	"fake.com/nilspcarlson/internal/dal"
 )
 
 // return all conversation information for each conversation

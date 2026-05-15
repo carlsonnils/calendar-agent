@@ -4,10 +4,10 @@ import (
 	"log"
 	"os"
 
-	"calendar/internal/agent"
-	"calendar/internal/dal"
-	"calendar/internal/database"
-	"calendar/internal/server"
+	"fake.com/nilspcarlson/internal/agent"
+	"fake.com/nilspcarlson/internal/dal"
+	"fake.com/nilspcarlson/internal/database"
+	"fake.com/nilspcarlson/internal/server"
 )
 
 func main() {
@@ -42,6 +42,9 @@ func main() {
 		log.Fatalf("agent: %v", err)
 	}
 
-	// start and run the http server
-	server.StartServer(a)
+    // set server ui path
+    server.UiPath = "nilspcarlson/ui"
+
+	// return the route muxer
+	return server.BuildMuxer(a)
 }

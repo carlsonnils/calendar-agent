@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"calendar/internal/models"
+	"fake.com/nilspcarlson/internal/models"
 )
 
 // ============================================================

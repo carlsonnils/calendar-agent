@@ -18,7 +18,7 @@ var DB *sql.DB
 
 // Open opens (or creates) the SQLite database at the given path,
 // sets the required PRAGMAs, and runs any pending migrations.
-func Open(dbPath string) (*sql.DB, error) {
+func Open(dbPath, migrationsPath string) (*sql.DB, error) {
 	// CGo SQLite driver — the DSN supports query parameters for PRAGMAs
 	// that must be set at connection time (e.g. _foreign_keys).
 	dsn := fmt.Sprintf(
@@ -43,7 +43,7 @@ func Open(dbPath string) (*sql.DB, error) {
 
 	DB = db
 
-	if err := runMigrations(db, migrationsDir()); err != nil {
+	if err := runMigrations(db, migrationsPath); err != nil {
 		return DB, fmt.Errorf("migrations: %w", err)
 	}
 
@@ -56,15 +56,6 @@ func Close() {
 	if DB != nil {
 		DB.Close()
 	}
-}
-
-// migrationsDir returns the path to the migrations folder relative to the
-// binary's working directory. Override by setting MIGRATIONS_DIR env var.
-func migrationsDir() string {
-	if dir := os.Getenv("MIGRATIONS_DIR"); dir != "" {
-		return dir
-	}
-	return "db/migrations"
 }
 
 // ============================================================

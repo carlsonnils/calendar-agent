@@ -1,4 +1,4 @@
-module calendar
+module fake.com/nilspcarlson
 
 go 1.26.2
 
