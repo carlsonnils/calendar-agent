@@ -27,7 +27,7 @@ func main() {
 	}
 
 	// Open and migrate database
-	db, err := database.Open(dbPath)
+	db, err := database.Open(dbPath, "db/migrations")
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}
@@ -43,8 +43,8 @@ func main() {
 	}
 
     // set server ui path
-    server.UiPath = "nilspcarlson/ui"
+    server.UiPath = "ui"
 
 	// return the route muxer
-	return server.BuildMuxer(a)
+	server.StartServer(a)
 }
