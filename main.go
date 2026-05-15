@@ -1,7 +1,8 @@
-package main
+package nilspcarlson
 
 import (
 	"log"
+    "net/http"
 	"os"
 
 	"fake.com/nilspcarlson/internal/agent"
@@ -10,8 +11,8 @@ import (
 	"fake.com/nilspcarlson/internal/server"
 )
 
-func main() {
-	dbPath := "db/calendar.db"
+func NewServeMuxer() http.Handler {
+	dbPath := "nilspcarlson/db/calendar.db"
 	if len(os.Args) > 1 {
 		dbPath = os.Args[1]
 	}
@@ -27,7 +28,7 @@ func main() {
 	}
 
 	// Open and migrate database
-	db, err := database.Open(dbPath)
+	db, err := database.Open(dbPath, "nilspcarlson/db/migrations")
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}
