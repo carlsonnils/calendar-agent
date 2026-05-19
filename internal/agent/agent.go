@@ -15,8 +15,8 @@ import (
 // agent.go implements the agentic conversation loop:
 //
 //  1. Receive a user message
-//  2. POST to Anthropic /v1/messages with tools + history
-//  3. If the response contains tool_use blocks, dispatch each to DispatchTool
+//  2. POST to xAI chat endpoint
+//  3. If the response contains tool blocks, dispatch each to DispatchTool
 //  4. Append the assistant message and all tool_results to the conversation
 //  5. POST again with the updated history (the model may call more tools)
 //  6. Repeat until the model produces a stop_reason of "end_turn"
