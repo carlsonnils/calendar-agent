@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Calendar Login</title>
+        <link rel="stylesheet" type="text/css" href="login/layout.css">
+        <link rel="stylesheet" type="text/css" href="login/theme.css">
+    </head>
+    <body>
+        <form id="login-form">
+            <div class="input-container">
+                <label id="username-label" for="username-input">Username</label>
+                <input id="username-input" type="text" pattern="\S+" title="No spaced allowed" required>
+            </div>
+            <div class="input-container">
+                <label id="password-label" for="password-input">Password</label>
+                <input id="password-input" type="password" required>
+            </div>
+            <button id="submit-login">Login</button>
+        </form>
+        <script src="login/index.js" type="module"></script>
+    </body>
+</html>
