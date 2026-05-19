@@ -36,7 +36,10 @@ async function submitPrompt() {
     });
 
     // catch http response error
-    if (!r.ok) {
+    if (r.status === 401) {
+        window.location.href = "/login"; 
+        return;
+    } else if (!r.ok) {
         throw new Error(`HTTP error: ${res.status} ${res.statusText}`);
     }
 
