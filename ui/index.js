@@ -25,7 +25,7 @@ async function submitPrompt() {
 
     // reset prompt input
     promptInput.value = "";
-    promptInput.placeholder = "Response ...";
+    promptInput.placeholder = "Ask assistant ...";
 
     // get message response
     const r = await fetch("api/chat", { 
