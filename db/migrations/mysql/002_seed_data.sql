@@ -219,7 +219,7 @@ VALUES (6, 'Dentist appointment tomorrow at 9am — 45 Market St.',
 -- 1st of next month at 09:00
 INSERT INTO reminders (id, message, remind_at, event_id, task_id, recurrence_type, recurrence_rule, recurrence_end, is_active)
 VALUES (7, 'Monthly Pi server audit — check CrowdSec logs, update packages, review firewall rules.',
-        DATE_ADD(LAST_DAY(NOW()), INTERVAL 9 HOUR + INTERVAL 1 DAY),
+        DATE_ADD(DATE_ADD(LAST_DAY(NOW()), INTERVAL 1 DAY), INTERVAL 9 HOUR),
         NULL, NULL, 'monthly', '{"interval": 1, "day_of_month": 1}', NULL, 1);
 
 INSERT INTO reminders (id, message, remind_at, event_id, task_id, recurrence_type, recurrence_rule, recurrence_end, is_active)
