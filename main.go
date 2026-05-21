@@ -11,25 +11,14 @@ import (
 )
 
 func main() {
-	// set database path, update if path given as argument
-	dbPath := "db/calendar.db"
-	if len(os.Args) > 1 {
-		dbPath = os.Args[1]
-	}
-
-	// create the database file if it does not exist
-	_, err := os.Stat(dbPath)
-	if os.IsNotExist(err) {
-		_, err = os.OpenFile(dbPath, os.O_CREATE, 0644)
-		if err != nil {
-			log.Fatalf("failed to create database file: %v", err)
-		}
-	} else if err != nil {
-		log.Fatalf("failed to check database: %v", err)
+	// load mysql dsn from environment
+	dsn := os.Getenv("NILSPCARLSON_MYSQL_DSN")
+	if dsn == "" {
+		log.Fatal("NILSPCARLSON_MYSQL_DSN environment variable not set")
 	}
 
 	// Open and migrate database
-	db, err := database.Open(dbPath, "db/sqlite/migrations")
+	db, err := database.Open(dsn, "db/migrations/mysql")
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}
