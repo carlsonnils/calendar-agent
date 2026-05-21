@@ -6,7 +6,7 @@ INSERT INTO conversations (session_id, name, history, message_count, created_at,
 VALUES (
     'session-seed-a',
     'whats today?',
-    '[
+    JSON_VALID('[
         {
             "role": "user",
             "content": [{"type": "text", "text": "What have I got on today?"}]
@@ -34,7 +34,7 @@ VALUES (
         },
         {
             "role": "assistant",
-            "content": [{"type": "text", "text": "Today you have your morning supplements reminder and the Pi server maintenance window at 8pm. That is it for today — reasonably light."}]
+            "content": [{"type": "text", "text": "Today you have your morning supplements reminder and the Pi server maintenance window at 8pm. That is it for today - reasonably light."}]
         },
         {
             "role": "user",
@@ -63,9 +63,9 @@ VALUES (
         },
         {
             "role": "assistant",
-            "content": [{"type": "text", "text": "Done — task added to Pi Home Server, due by 7pm so you have time before the maintenance window."}]
+            "content": [{"type": "text", "text": "Done - task added to Pi Home Server, due by 7pm so you have time before the maintenance window."}]
         }
-    ]',
+    ]'),
     4,
     DATE_ADD(DATE_SUB(NOW(), INTERVAL 1 DAY), INTERVAL (7 * 60 + 45) MINUTE),
     DATE_ADD(DATE_SUB(NOW(), INTERVAL 1 DAY), INTERVAL (7 * 60 + 52) MINUTE)
@@ -75,7 +75,7 @@ INSERT INTO conversations (session_id, name, history, message_count, created_at,
 VALUES (
     'session-seed-b',
     'anything overdue?',
-    '[
+    JSON_VALID('[
         {
             "role": "user",
             "content": [{"type": "text", "text": "Do I have anything overdue?"}]
@@ -153,7 +153,7 @@ VALUES (
         },
         {
             "role": "assistant",
-            "content": [{"type": "text", "text": "Done — iron shaft task marked complete. Good call on the X100."}]
+            "content": [{"type": "text", "text": "Done - iron shaft task marked complete. Good call on the X100."}]
         },
         {
             "role": "user",
@@ -187,9 +187,9 @@ VALUES (
         },
         {
             "role": "assistant",
-            "content": [{"type": "text", "text": "Reminder set — you will get a daily nudge at 9am to order the shafts. It will keep firing until you delete it."}]
+            "content": [{"type": "text", "text": "Reminder set - you will get a daily nudge at 9am to order the shafts. It will keep firing until you delete it."}]
         }
-    ]',
+    ]'),
     5,
     DATE_ADD(DATE(NOW()), INTERVAL (8 * 60 + 30) MINUTE),
     DATE_ADD(DATE(NOW()), INTERVAL (8 * 60 + 58) MINUTE)
