@@ -2,5 +2,5 @@
 -- MySQL version
 -- ============================================================
 
-INSERT INTO users (name, username, password)
-VALUES ('nils test', 'test', 'password');
+-- INSERT INTO users (name, username, password)
+-- VALUES ('nils test', 'test', 'password');
