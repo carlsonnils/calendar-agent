@@ -10,23 +10,17 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // DB is the package-level database handle. Initialised by Open().
 var DB *sql.DB
 
-// Open opens (or creates) the SQLite database at the given path,
-// sets the required PRAGMAs, and runs any pending migrations.
-func Open(dbPath, migrationsPath string) (*sql.DB, error) {
-	// CGo SQLite driver — the DSN supports query parameters for PRAGMAs
-	// that must be set at connection time (e.g. _foreign_keys).
-	dsn := fmt.Sprintf(
-		"%s?_foreign_keys=on&_journal_mode=WAL&_busy_timeout=5000",
-		dbPath,
-	)
-
-	db, err := sql.Open("sqlite3", dsn)
+// Open opens the sqlite database at the given path
+// Runs any pending migrations
+func Open(dsn, migrationsPath string) (*sql.DB, error) {
+	// open database
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return db, fmt.Errorf("open db: %w", err)
 	}
@@ -41,13 +35,15 @@ func Open(dbPath, migrationsPath string) (*sql.DB, error) {
 		return db, fmt.Errorf("ping db: %w", err)
 	}
 
+	// set package level for clean up
 	DB = db
 
+	fmt.Println(migrationsPath)
 	if err := runMigrations(db, migrationsPath); err != nil {
 		return DB, fmt.Errorf("migrations: %w", err)
 	}
 
-	log.Println("database ready:", dbPath)
+	log.Println("database ready")
 	return DB, nil
 }
 
@@ -107,10 +103,10 @@ func runMigrations(db *sql.DB, dir string) error {
 func ensureMigrationsTable(db *sql.DB) error {
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS schema_migrations (
-			version     TEXT PRIMARY KEY,
-			filename    TEXT    NOT NULL,
-			applied_at  TEXT    NOT NULL DEFAULT (datetime('now'))
-		)
+			version     VARCHAR(255) PRIMARY KEY,
+			filename    VARCHAR(255)    NOT NULL,
+			applied_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+		);
 	`)
 	return err
 }
