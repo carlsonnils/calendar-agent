@@ -50,3 +50,8 @@ input:focus-visible {
     outline: none;
     box-shadow: var(--hover-box-shadow);
 }
+
+#failed-login-message {
+    color: red;
+    padding: 10px 5px;
+}

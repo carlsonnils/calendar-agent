@@ -2,14 +2,12 @@
 document.getElementById("submit-login").addEventListener("click", (e) => {
     submitLogin(e);
 });
-// document.querySelectorAll(".input-container").forEach((x) => { 
-//     x.addEventListener("keypress", (e) => {
-//         if (e.key === 'Enter') {
-//             document.getElementById("submit-login").click();
-//         }
-//     });
-// });
 
+
+// capitalize first letter of a string
+function capitalize(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 async function submitLogin(e) {
     // prevent page reload
@@ -27,9 +25,12 @@ async function submitLogin(e) {
         body: JSON.stringify(body),
     });
 
-    // reroute to chat
+    // reroute to chat 
+    // show message on failed login
     if (r.ok) {
         window.location.href = "/";
-    } 
-    // TODO: add failed login message
+    } else {
+        const data = await r.json();
+        document.getElementById("failed-login-message").textContent = capitalize(data.message);
+    }
 }
