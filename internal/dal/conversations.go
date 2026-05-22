@@ -90,11 +90,11 @@ func SaveConversation(ctx context.Context, sessionID, name string, history json.
 	_, err := DB.ExecContext(ctx, `
 		INSERT INTO conversations (session_id, name, history, message_count)
 		VALUES (?, ?, ?, ?)
-		ON CONFLICT(session_id) DO UPDATE SET
-			name          = excluded.name,
-			history       = excluded.history,
-			message_count = excluded.message_count`,
-		sessionID, histStr, messageCount,
+		ON DUPLICATE KEY UPDATE
+			name          = VALUES(name),
+			history       = VALUES(history),
+			message_count = VALUES(message_count)`,
+		sessionID, name, histStr, messageCount,
 	)
 	if err != nil {
 		return fmt.Errorf("SaveConversation %q: %w", sessionID, err)
