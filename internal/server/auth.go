@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"fake.com/nilspcarlson/internal/crypto"
 	"fake.com/nilspcarlson/internal/dal"
 	"fake.com/nilspcarlson/internal/jwt"
 )
@@ -58,7 +59,8 @@ func AuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if passwords match
-	if body.Password != user.Password {
+	match, err := crypto.VerifyPassword(body.Password, user.Password)
+	if err != nil || !match {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte(`{"message": "username or password is incorrect"}`))
 		return
