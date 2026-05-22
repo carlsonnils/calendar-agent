@@ -7,10 +7,18 @@ import (
 	"fake.com/nilspcarlson/internal/agent"
 	"fake.com/nilspcarlson/internal/dal"
 	"fake.com/nilspcarlson/internal/database"
+	"fake.com/nilspcarlson/internal/jwt"
 	"fake.com/nilspcarlson/internal/server"
 )
 
 func main() {
+	// set jwt hmac key
+	envHmacKey := os.Getenv("NILSPCARLSON_HMAC_KEY")
+	if envHmacKey == "" {
+		log.Fatal("NILSPCARLSON_HMAC_KEY environment variable not set")
+	}
+	jwt.HmacKey = []byte(envHmacKey)
+
 	// load mysql dsn from environment
 	dsn := os.Getenv("NILSPCARLSON_MYSQL_DSN")
 	if dsn == "" {

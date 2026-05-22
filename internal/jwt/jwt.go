@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	hmacKey = []byte("currentkeyfordevelopment") // key for development
+	HmacKey []byte
 )
 
 type Header struct {
@@ -43,7 +43,7 @@ func Make(h Header, b Body) (string, error) {
     payload := header + "." + body
 
 	// create the signature
-    mac := hmac.New(sha256.New, hmacKey)
+    mac := hmac.New(sha256.New, HmacKey)
     mac.Write([]byte(payload))
 
     signatureBytes := mac.Sum(nil)
@@ -62,7 +62,7 @@ func CheckSignature(j string) bool {
     }
 
 	// create new signature from current head and body
-    mac := hmac.New(sha256.New, hmacKey)
+    mac := hmac.New(sha256.New, HmacKey)
     mac.Write([]byte(parts[0] + "." + parts[1]))
     exSignature := mac.Sum(nil)
 
