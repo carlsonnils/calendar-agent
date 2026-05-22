@@ -14,10 +14,7 @@ var (
 )
 
 // Build muxer
-func BuildMuxer(a *agent.Agent) *http.ServeMux {
-	// one conversation per server
-	conv := agent.NewConversation()
-
+func BuildMuxer(a *agent.Agent, conv *agent.Conversation) *http.ServeMux {
 	// apply routes to the request multiplexer
     mux := http.NewServeMux()
     mux.HandleFunc("/", MainHandler)
@@ -25,17 +22,16 @@ func BuildMuxer(a *agent.Agent) *http.ServeMux {
 	mux.HandleFunc("POST /login", AuthLoginHandler)
     mux.HandleFunc(
 		"POST /api/chat", 
-		CheckAuthMiddleware(a.ReplyHandler(context.Background(), conv)),
-	)
+		CheckAuthMiddleware(a.ReplyHandler(context.Background(), conv)))
     // mux.HandleFunc("GET /api/conversations", ListConversationsHandler)
 
     return mux
 }
 
 // run http server to accept http requests to the agent
-func StartServer(a *agent.Agent) {  
+func StartServer(a *agent.Agent, conv *agent.Conversation) {  
     // build serve muxer
-    mux := BuildMuxer(a)
+    mux := BuildMuxer(a, conv)
 
     go serveHTTP(mux)
     // go serveHTTPS(mux)

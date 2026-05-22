@@ -30,12 +30,18 @@ func main() {
 	// Create the agent
 	a, err := agent.New()
 	if err != nil {
-		log.Fatalf("agent: %v", err)
+		log.Fatalf("new agent: %v", err)
+	}
+
+	// Load conversation
+	conv, err := agent.LoadConversation("nilspcarlson_calendar_0")
+	if err != nil {
+		log.Fatalf("loading conversation: %v", err)
 	}
 
     // set server ui path
     server.UiPath = "ui"
 
 	// return the route muxer
-	server.StartServer(a)
+	server.StartServer(a, conv)
 }

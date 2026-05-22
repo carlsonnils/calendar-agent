@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"fake.com/nilspcarlson/internal/dal"
 )
 
 // agent.go implements the agentic conversation loop:
@@ -192,9 +194,66 @@ func NewConversation() *Conversation {
 	return &Conversation{}
 }
 
+func LoadConversation(sessionId string) (*Conversation, error) {
+	c, err := dal.LoadConversation(context.Background(), sessionId)
+	if err != nil {
+		return NewConversation(), err
+	}
+
+	conv := &Conversation{}
+	err = json.Unmarshal(c.History, &conv.History)
+	if err != nil {
+		return NewConversation(), err
+	}
+
+	return conv, nil
+}
+
+func saveConversation(conv *Conversation) error {
+	// get history bytes
+	histBytes, err := json.Marshal(conv.History)
+	if err != nil {
+		return err
+	} 
+
+	err = dal.SaveConversation(
+		context.Background(), "nilspcarlson_calendar_0", 
+		"main calendar", histBytes, len(conv.History))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func processToolCalls(choice Choice, conv *Conversation, ctx context.Context) {
+	for _, tc := range choice.Message.ToolCalls {
+		log.Printf("agent: tool_use name=%s id=%s",  tc.Function.Name, tc.ID)
+		result, err := DispatchTool(ctx, tc.Function.Name, []byte(tc.Function.Arguments))
+		if err != nil {
+			result = jsonErr(err.Error())
+		}
+
+		// Append all tool results as a single user turn
+		conv.History = append(conv.History, Message{
+			Role:    "tool",
+			Content: result,
+			ToolCallID: tc.ID,
+		})
+	}
+}
+
 // Reply takes a user message, runs the agent loop, and returns the
 // assistant's final text response.
 func (a *Agent) Reply(ctx context.Context, conv *Conversation, userMessage string) (string, error) {
+	// save conversation on function exit
+	defer func() {
+		err := saveConversation(conv)
+		if err != nil {
+			log.Println("agent.Reply error saving conversation:", err)
+		}
+	}()
+
 	// Append the new user turn
 	conv.History = append(conv.History, Message{
 		Role:    "user",
@@ -202,45 +261,36 @@ func (a *Agent) Reply(ctx context.Context, conv *Conversation, userMessage strin
 	})
 
 	// Agentic loop
-	// for round := 0; round < maxToolRounds; round++ {
-	for round := 0; round < 2; round++ {
+	for round := 0; round < 5; round++ {
+		// call chat xAI endpoint with the conversation history
 		resp, err := a.callAPI(ctx, conv.History)
 		if err != nil {
-			return "", fmt.Errorf("API call: %w", err)
+			return "", err
 		}
 
-		// Log token usage for cost monitoring on the Pi
+
+		// only use first choice, not testing llm outputs
+		choice := resp.Choices[0]
+
+		// Log token usage for cost monitoring
 		log.Printf("agent: round=%d stop=%s",
-			round, resp.Choices[0].FinishReason)
+			round, choice.FinishReason)
 		log.Println("agent.Reply llm response choices: ", resp.Choices)
 
-		// Append the full assistant message to history (required by the API)
+		// Append the full assistant message to history
 		conv.History = append(conv.History, Message{
-			Role:    resp.Choices[0].Message.Role,
-			Content: resp.Choices[0].Message.Content,
-			ToolCalls: resp.Choices[0].Message.ToolCalls,
+			Role:    choice.Message.Role,
+			Content: choice.Message.Content,
+			ToolCalls: choice.Message.ToolCalls,
 		})
 
-		// If no tool calls, we are done
-		if resp.Choices[0].FinishReason == "stop" || resp.Choices[0].FinishReason != "tool_calls" {
-			return extractText(resp.Choices), nil
+		// If no tool calls return from function
+		if choice.FinishReason == "stop" || choice.FinishReason != "tool_calls" {
+			return choice.Message.Content, nil
 		}
 
-		// Process all tool_use blocks in this response
-		for _, tc := range resp.Choices[0].Message.ToolCalls {
-			log.Printf("agent: tool_use name=%s id=%s",  tc.Function.Name, tc.ID)
-			result, err := DispatchTool(ctx, tc.Function.Name, []byte(tc.Function.Arguments))
-			if err != nil {
-				result = jsonErr(err.Error())
-			}
-
-			// Append all tool results as a single user turn
-			conv.History = append(conv.History, Message{
-				Role:    "tool",
-				Content: result,
-				ToolCallID: tc.ID,
-			})
-		}
+		// Process all tool_use blocks
+		processToolCalls(choice, conv, ctx)
 	}
 
 	return "", fmt.Errorf("agent: exceeded max tool rounds (%d)", maxToolRounds)
@@ -301,10 +351,10 @@ func (a *Agent) callAPI(ctx context.Context, history []Message) (*apiResponse, e
 // Helpers
 // ============================================================
 
-func extractText(choices []Choice) string {
-	var result string
-	for _, c := range choices {
-		result += c.Message.Content
-	}
-	return result
-}
+// func extractText(choices []Choice) string {
+// 	var result string
+// 	for _, c := range choices {
+// 		result += c.Message.Content
+// 	}
+// 	return result
+// }
