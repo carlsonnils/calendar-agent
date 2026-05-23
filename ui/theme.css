@@ -37,7 +37,7 @@ button:focus-visible {
     background: hsl(0 0 70);
 }
 
-input {
+#prompt-text {
     --bg: hsl(0 0 96);
     background: var(--bg);
     box-shadow: var(--base-box-shadow);
@@ -45,7 +45,7 @@ input {
     border-radius:  10px;
     font: inherit;
 }
-input:focus-visible {
+#prompt-text:focus-visible {
     outline: none;
     box-shadow: var(--hover-box-shadow);
 }
