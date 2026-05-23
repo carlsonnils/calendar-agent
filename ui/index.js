@@ -18,14 +18,13 @@ async function submitPrompt() {
 
     // get prompt message
     const promptInput = document.getElementById("prompt-text");
-    const promptMessage = promptInput.value;
+    const promptMessage = promptInput.textContent;
 
     // update user message block
     updateBlock("user", promptMessage);
 
     // reset prompt input
-    promptInput.value = "";
-    promptInput.placeholder = "Ask assistant ...";
+    promptInput.textContent = "";
 
     // get message response
     const r = await fetch("api/chat", { 
