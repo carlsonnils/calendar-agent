@@ -1,7 +1,9 @@
-package main
+// package main // dev
+package nilspcarlson
 
 import (
 	"log"
+    "net/http"
 	"os"
 
 	"fake.com/nilspcarlson/internal/agent"
@@ -11,7 +13,8 @@ import (
 	"fake.com/nilspcarlson/internal/server"
 )
 
-func main() {
+// func main() {    //dev
+func NewServeMuxer() http.Handler {
 	// set jwt hmac key
 	envHmacKey := os.Getenv("NILSPCARLSON_HMAC_KEY")
 	if envHmacKey == "" {
@@ -26,11 +29,12 @@ func main() {
 	}
 
 	// Open and migrate database
-	db, err := database.Open(dsn, "db/migrations/mysql")
+	// db, err := database.Open(dsn, "db/migrations/mysql") // dev
+	db, err := database.Open(dsn, "nilspcarlson/db/migrations/mysql")
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}
-	defer database.Close()
+	// defer database.Close()   // dev
 
 	// set dal database
 	dal.DB = db
@@ -48,8 +52,14 @@ func main() {
 	}
 
     // set server ui path
-    server.UiPath = "ui"
+    // server.UiPath = "ui" // dev
+    server.UiPath = "nilspcarlson/ui"
 
 	// return the route muxer
-	server.StartServer(a, conv)
+    // server.StartServer(a, conv)  //dev
+	return server.BuildMuxer(a, conv)
+}
+
+func CloseDB() {
+    database.Close()
 }
