@@ -44,7 +44,7 @@ func buildSystemPrompt() string {
 		"- When the user asks to add, create, schedule, or remind, call the appropriate write tool immediately without asking for confirmation unless a required field is genuinely missing.\n" +
 		"- For datetime inputs always use ISO8601 format: 2026-05-03T14:00:00.\n" +
 		"- When the user says today, tomorrow, or this week, resolve to concrete datetimes yourself based on the current date before calling tools.\n" +
-		"- Keep responses concise. Use plain text with no markdown headers or bullet syntax, because this is WhatsApp.\n" +
+		"- Keep responses concise. Use plain text and/or html syntax. Your response will be embeded into a web page.\n" +
 		"- After a write operation, confirm what was created or updated in one sentence.\n" +
 		"- Today's date and time (UTC): " + now + " UTC"
 }
