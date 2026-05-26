@@ -3,7 +3,11 @@ document.getElementById("submit-prompt").addEventListener("click", (e) => {
     submitPrompt();
 });
 document.getElementById("prompt-text").addEventListener("keypress", (e) => {
+    if (e.getModifierState("Shift")) {
+        return;
+    }
     if (e.key === 'Enter') {
+        e.preventDefault();
         document.getElementById("submit-prompt").click();
     }
 });
