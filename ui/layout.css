@@ -1,6 +1,5 @@
 * {
     box-sizing: border-box;
-    font-family: sans-serif;
 }
 
 body {
@@ -53,7 +52,6 @@ body {
 
 .messages {
     display: none; /* turned to flex after first prompt submitted */
-    min-width: min(100%, 750px);
     max-width: min(100%, 1200px);
     flex-direction: column;
     justify-content: center;
