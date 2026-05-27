@@ -44,7 +44,7 @@ func buildSystemPrompt() string {
 		"- When the user asks to add, create, schedule, or remind, call the appropriate write tool immediately without asking for confirmation unless a required field is genuinely missing.\n" +
 		"- For datetime inputs always use ISO8601 format: 2026-05-03T14:00:00.\n" +
 		"- When the user says today, tomorrow, or this week, resolve to concrete datetimes yourself based on the current date before calling tools.\n" +
-		"- Keep responses concise. Use plain text and/or html syntax. Your response will be embeded into a web page.\n" +
+		"- Keep responses concise. Use html when it makes sense to format responses. Your response will be embeded into a web page.\n" +
 		"- After a write operation, confirm what was created or updated in one sentence.\n" +
 		"- Today's date and time (UTC): " + now + " UTC"
 }
@@ -56,7 +56,7 @@ func buildSystemPrompt() string {
 // Message represents a single turn in the conversation history.
 type Message struct {
 	Role    string    `json:"role"`
-	Content string `json:"content,omitempty"`
+	Content string `json:"content"`
 
 	// for assistant messages
 	ToolCalls []ToolCall `json:"tool_calls,omitempty"`
@@ -262,12 +262,17 @@ func (a *Agent) Reply(ctx context.Context, conv *Conversation, userMessage strin
 
 	// Agentic loop
 	for round := 0; round < 5; round++ {
+		// use only most recent 10 messages for conversation context history
+		hist := conv.History
+		if len(hist) > 10 {
+			hist = hist[len(hist)-10:len(hist)]
+		}
+
 		// call chat xAI endpoint with the conversation history
-		resp, err := a.callAPI(ctx, conv.History)
+		resp, err := a.callAPI(ctx, hist)
 		if err != nil {
 			return "", err
 		}
-
 
 		// only use first choice, not testing llm outputs
 		choice := resp.Choices[0]
