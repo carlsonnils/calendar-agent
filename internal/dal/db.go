@@ -69,10 +69,17 @@ func (n nullTime) Scan(src any) error {
 		*n.ptr = nil
 		return nil
 	}
-	s, ok := src.(string)
-	if !ok {
+
+	var s string
+	switch v := src.(type) {
+	case string:
+		s = v
+	case []uint8:
+		s = string(v)
+	default:
 		return fmt.Errorf("nullTime.Scan: expected string, got %T", src)
 	}
+
 	t, err := parseTime(s)
 	if err != nil {
 		return err
