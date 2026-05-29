@@ -1,3 +1,6 @@
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+
+
 // PROMPT SUBMISSION EVENT LISTENERS
 document.getElementById("submit-prompt").addEventListener("click", (e) => {
     submitPrompt();
@@ -60,7 +63,15 @@ function updateBlock(t, m) {
 
     // update block
     updateBlockTime(block.querySelector(".time-block"));
-    block.querySelector(".message-text").innerHTML = m.replace(/\n/g, '<br>');
+    const messageBlock = block.querySelector(".message-text");
+    switch (t) {
+        case "user":
+            messageBlock.innerHTML = m;
+            break;
+        case "chat":
+            messageBlock.innerHTML = marked.parse(m);
+            break;
+    }
 
     // add to messages
     document.querySelector("#messages").append(block);
