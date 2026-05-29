@@ -59,3 +59,8 @@ button:focus-visible {
     outline: none;
     box-shadow: var(--hover-box-shadow);
 }
+
+.message-text > p {
+    margin: 0;
+    padding 0;
+}
