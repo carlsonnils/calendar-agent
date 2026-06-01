@@ -30,7 +30,7 @@ const (
 	xaiAPIURL = "https://api.x.ai/v1/chat/completions"
 	xaiModel  = "grok-4-1-fast-reasoning"
 	maxCompletionTokens       = 1024
-	maxToolRounds   = 10
+	maxToolRounds   = 5
 )
 
 // buildSystemPrompt returns the system prompt with the current UTC time injected.
@@ -261,7 +261,7 @@ func (a *Agent) Reply(ctx context.Context, conv *Conversation, userMessage strin
 	})
 
 	// Agentic loop
-	for round := 0; round < 5; round++ {
+	for round := 0; round < maxToolRounds; round++ {
 		// use only most recent 10 messages for conversation context history
 		hist := conv.History
 		if len(hist) > 10 {
