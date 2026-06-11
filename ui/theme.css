@@ -17,7 +17,7 @@
 }
 
 button {
-    --bg: hsl(from var(--accent-color) h calc(s - 10) l);
+    --bg: hsl(from var(--accent-color) h calc(s) l);
     --text: white;
     color: var(--text);
     background: var(--bg);
@@ -49,6 +49,7 @@ button:focus-visible {
 
 #activate-voice {
     padding: 0 10px;
+    background: hsl(from var(--accent-color) h calc(s + 10) calc(l - 20));
     & img {
         max-height: 1em;
     }
