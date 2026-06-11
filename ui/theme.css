@@ -47,6 +47,13 @@ button:focus-visible {
     background: hsl(0 0 70);
 }
 
+#activate-voice {
+    padding: 0 10px;
+    & img {
+        max-height: 15px;
+    }
+}
+
 #prompt-text {
     --bg: hsl(0 0 96);
     background: var(--bg);

@@ -14,6 +14,9 @@ document.getElementById("prompt-text").addEventListener("keypress", (e) => {
         document.getElementById("submit-prompt").click();
     }
 });
+document.getElementById("activate-voice").addEventListener("click", (e) => {
+    submitPrompt();
+});
 
 async function submitPrompt() {
     // hide the welcome message
