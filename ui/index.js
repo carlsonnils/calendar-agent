@@ -15,7 +15,8 @@ document.getElementById("prompt-text").addEventListener("keypress", (e) => {
     }
 });
 document.getElementById("activate-voice").addEventListener("click", (e) => {
-    submitPrompt();
+    // submitVoiceToText();
+    alert("TODO: implement voice to text");
 });
 
 async function submitPrompt() {
