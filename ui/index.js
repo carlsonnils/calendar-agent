@@ -33,6 +33,9 @@ async function submitPrompt() {
     // reset prompt input
     promptInput.textContent = "";
 
+    // show loader animation
+    document.getElementById("loader").style.display = "inline-block";
+
     // get message response
     const r = await fetch("api/chat", { 
         method: "POST",
@@ -51,6 +54,9 @@ async function submitPrompt() {
 
     // get response data
     const d = await r.json();
+
+    // hide loader animation
+    document.getElementById("loader").style.display = "none";
 
     // update chat message with response
     updateBlock("chat", d.message);
