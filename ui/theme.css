@@ -50,7 +50,7 @@ button:focus-visible {
 #activate-voice {
     padding: 0 10px;
     & img {
-        max-height: 15px;
+        max-height: 1em;
     }
 }
 
@@ -73,9 +73,9 @@ button:focus-visible {
 }
 
 .loader-animation {
-  width: calc(100px - 24px);
-  height: 50px;
-  margin: 25px 0px;
+  width: calc(4em - 1em);
+  height: 2em;
+  margin: 1em 0px;
   position: relative;
   animation: flippx 2s infinite linear;
 }
@@ -84,11 +84,11 @@ button:focus-visible {
   position: absolute;
   inset: 0;
   margin: auto;
-  width: 20px;
-  height: 20px;
+  width: 0.8em;
+  height: 0.8em;
   border-radius: 50%;
   background: var(--accent-color);
-  transform-origin: -24px 50%;
+  transform-origin: -1em 50%;
   animation: spin 1s infinite linear;
 }
 .loader-animation:after {
@@ -98,8 +98,8 @@ button:focus-visible {
   top: 50%;
   transform: translate(-50% , -50%);
   background: var(--accent-color);
-  width: 48px;
-  height: 48px;
+  width: 2em;
+  height: 2em;
   border-radius: 50%;
 }
 
