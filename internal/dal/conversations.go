@@ -11,10 +11,6 @@ import (
 	"fake.com/nilspcarlson/internal/models"
 )
 
-// conversations.go persists agent conversation history to SQLite so sessions
-// survive server restarts and page reloads.
-
-// helper function to scan a conversation rows
 func scanConversation(row interface {
 	Scan(dest ...any) error
 }) (*models.Conversation, error) {
@@ -29,7 +25,7 @@ func scanConversation(row interface {
 		&updatedAt,
 	)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
+		return nil, sql.ErrNoRows
 	}
 	if err != nil {
 		return nil, fmt.Errorf("LoadConversation %q-%v: %w", rec.SessionID, rec.Name, err)
@@ -43,8 +39,6 @@ func scanConversation(row interface {
 	return &rec, nil
 }
 
-// LoadConversation returns the conversation record for sessionID, or nil if
-// the session does not exist yet.
 func ListConversations(ctx context.Context) ([]*models.Conversation, error) {
 	rows, err := DB.QueryContext(ctx, `
 		SELECT session_id, name, history, message_count, created_at, updated_at
@@ -67,8 +61,6 @@ func ListConversations(ctx context.Context) ([]*models.Conversation, error) {
 	return conversations, nil
 }
 
-// LoadConversations returns the conversation record for sessionID, or nil if
-// the session does not exist yet.
 func LoadConversation(ctx context.Context, sessionID string) (*models.Conversation, error) {
 	row := DB.QueryRowContext(ctx, `
 		SELECT session_id, name, history, message_count, created_at, updated_at
@@ -83,8 +75,6 @@ func LoadConversation(ctx context.Context, sessionID string) (*models.Conversati
 	return rec, nil
 }
 
-// SaveConversation upserts the conversation history for sessionID.
-// messageCount should be the total number of user turns so far.
 func SaveConversation(ctx context.Context, sessionID, name string, history json.RawMessage, messageCount int) error {
 	histStr := string(history)
 	_, err := DB.ExecContext(ctx, `
@@ -102,7 +92,6 @@ func SaveConversation(ctx context.Context, sessionID, name string, history json.
 	return nil
 }
 
-// DeleteConversation removes a session entirely (used by the "new chat" button).
 func DeleteConversation(ctx context.Context, sessionID string) error {
 	_, err := DB.ExecContext(ctx,
 		`DELETE FROM conversations WHERE session_id = ?`, sessionID)
@@ -112,8 +101,6 @@ func DeleteConversation(ctx context.Context, sessionID string) error {
 	return nil
 }
 
-// PruneOldConversations deletes sessions that have not been updated in
-// olderThan duration. Call periodically (e.g. daily) to keep the DB lean.
 func PruneOldConversations(ctx context.Context, olderThan time.Duration) (int64, error) {
 	cutoff := time.Now().UTC().Add(-olderThan).Format("2006-01-02T15:04:05")
 	res, err := DB.ExecContext(ctx,
