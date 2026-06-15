@@ -46,10 +46,13 @@ button:focus-visible {
 .util-button {
     background: hsl(0 0 70);
 }
+#submit-prompt {
+    height: fit-content;
+}
 
 #activate-voice {
-    padding: 0 10px;
     background: hsl(from var(--accent-color) h calc(s + 10) calc(l - 20));
+    align-items: center;
     & img {
         max-height: 1em;
     }

@@ -1,5 +1,6 @@
 #recorder-container {
-    --bg: #0f0f12;
+    --bg: hsl(0 0 96);
+    --meter-bg: #0f0f12;
     --surface: #1a1a20;
     --border: #2a2a35;
     --accent: #c8a87a;
@@ -13,8 +14,13 @@
     flex-direction: row;
     align-items: center;
     background: var(--bg);
-    padding: 5px;
+    padding: 0.75em; 
     border-radius: 10px;
+    background: var(--bg);
+    box-shadow: var(--base-box-shadow);
+    border: none;
+    border-radius: 10px;
+    font: inherit;
 
     @media (prefers-reduced-motion: reduce) {
         .bar, button, .clip-dl { 
@@ -26,8 +32,8 @@
     }
 
     .meter-wrap {
-        height: 1em;
-        background: var(--bg);
+        height: 2em;
+        background: var(--meter-bg);
         border: 1px solid var(--border);
         border-radius: 2px;
         margin-bottom: 1.5rem;
@@ -35,26 +41,26 @@
         align-items: flex-end;
         justify-content: center;
         gap: 2px;
-        padding: 0;
+        padding: 1px 3px;
         margin: 0;
         overflow: hidden;
-        width: 100px;
+        min-width: 10em;
     }
 
     .timer {
         font-family: 'Courier New', monospace;
-        font-size: 0.5em;
+        font-size: 1em;
         text-align: center;
-        color: var(--text);
+        color: black;
     }
 
     .timer .ms {
-        font-size: 0.9em;
+        font-size: 1em;
         color: var(--muted);
     }
 
     .rec-btn {
-        font-size: 0.5em;
+        font-size: 0.6em;
         padding: 1em;
         height: fit-content;
         margin: 0;
@@ -64,7 +70,7 @@
         color: white;
         background: red;
         padding: 0.7em;
-        font-size: 0.5em;
+        font-size: 0.6em;
         height: fit-content;
         margin: 0;
     }

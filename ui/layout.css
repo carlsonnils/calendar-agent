@@ -134,7 +134,9 @@ body {
 
 .prompt-buttons {
     display: flex;
+    gap: 1em;
     padding: 0.5em 0.5em 0 0.5em;
+    align-items: center;
     & button {
         margin: 0 0.5em;
     }
