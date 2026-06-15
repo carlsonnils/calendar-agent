@@ -6,6 +6,7 @@
         <link rel="stylesheet" type="text/css" href="display.css">
         <link rel="stylesheet" type="text/css" href="layout.css">
         <link rel="stylesheet" type="text/css" href="theme.css">
+        <link rel="stylesheet" type="text/css" href="audioRecorder.css">
     </head>
     <body>
         <div id="app" class="app">
@@ -58,6 +59,16 @@
                         <button class="util-button">Add File</button>
                         <button class="util-button">Extend Thninking</button>
                         -->
+                        <div class="hidden" id="recorder-container">
+                            <button id="quit-recording">X</button>
+                            <!-- <div class="subtitle" id="status-line">ready</div> -->
+                            <button class="rec-btn" id="btn-record">● Rec</button>
+                            <button class="rec-btn" id="btn-stop" disabled>■ Stop</button>
+                            <div class="timer" id="timer">00:00<span class="ms">.00</span></div>
+                            <div class="meter-wrap" id="meter"></div>
+                            <audio controls id="audio-controls"></audio>
+                            <script src="audioRecorder.js", type="module"></script>
+                        </div>
                         <button id="activate-voice"><img src="microphone.png" alt="mic"></button>
                         <button id="submit-prompt">Submit</button>
                     </div>

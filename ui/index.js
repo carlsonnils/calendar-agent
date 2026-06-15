@@ -15,13 +15,17 @@ document.getElementById("prompt-text").addEventListener("keypress", (e) => {
     }
 });
 document.getElementById("activate-voice").addEventListener("click", (e) => {
-    // submitVoiceToText();
-    alert("TODO: implement voice to text");
+    document.getElementById("recorder-container").classList.remove("hidden");
+    document.getElementById("recorder-container").classList.add("flex");
+    document.getElementById("activate-voice").classList.add("hidden");
+    document.getElementById("activate-voice").classList.remove("flex");
+    document.getElementById("prompt-input").classList.add("hidden");
 });
 
 async function submitPrompt() {
     // hide the welcome message
-    document.querySelector("#welcome-message").style.display = "none";
+    // document.querySelector("#welcome-message").style.display = "none";
+    document.querySelector("#welcome-message").classList.add("hidden");
     // show chat begining
     document.querySelector("#chat-begining").style.display = "flex";
     // show the messages

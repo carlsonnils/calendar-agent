@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audio Recorder</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f12;
+      --surface: #1a1a20;
+      --border: #2a2a35;
+      --accent: #c8a87a;
+      --accent-dim: rgba(200, 168, 122, 0.15);
+      --text: #e8e4dc;
+      --muted: #6b6870;
+      --danger: #e05c5c;
+      --danger-dim: rgba(224, 92, 92, 0.12);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Georgia', serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .subtitle {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.04em;
+    }
+
+    /* VU meter / waveform */
+    .meter-wrap {
+      height: 56px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 2px;
+      padding: 6px 8px;
+      overflow: hidden;
+    }
+
+    .bar {
+      flex: 1;
+      background: var(--border);
+      border-radius: 1px;
+      transition: height 0.05s ease;
+      min-height: 3px;
+      max-height: 100%;
+    }
+
+    /* Timer */
+    .timer {
+      font-family: 'Courier New', monospace;
+      font-size: 2.4rem;
+      text-align: center;
+      letter-spacing: 0.06em;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+    }
+
+    .timer .ms {
+      font-size: 1.1rem;
+      color: var(--muted);
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.75rem;
+    }
+
+    button {
+      flex: 1;
+      padding: 0.65rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: transparent;
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    #btn-record {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    #btn-record:hover:not(:disabled) { background: var(--accent-dim); }
+    #btn-record.recording {
+      background: var(--danger-dim);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    #btn-stop:hover:not(:disabled) { background: rgba(255,255,255,0.05); }
+
+    /* Recordings list */
+    .list-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      margin-bottom: 0.6rem;
+    }
+
+    #recordings {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    #recordings::-webkit-scrollbar { width: 4px; }
+    #recordings::-webkit-scrollbar-track { background: transparent; }
+    #recordings::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .clip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 0.6rem 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .clip-meta {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .clip-name {
+      font-size: 0.78rem;
+      font-family: 'Courier New', monospace;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .clip-dur {
+      font-size: 0.68rem;
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      margin-top: 1px;
+    }
+
+    .clip audio {
+      width: 160px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .clip-dl {
+      color: var(--accent);
+      font-size: 0.85rem;
+      text-decoration: none;
+      opacity: 0.8;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .clip-dl:hover { opacity: 1; }
+
+    .empty {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    /* Pulse dot when recording */
+    .pulse {
+      display: inline-block;
+      width: 7px; height: 7px;
+      background: var(--danger);
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 1s ease-in-out infinite;
+      vertical-align: middle;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bar, button, .clip-dl { transition: none; }
+      .pulse { animation: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <header>
+    <h1>Audio Recorder</h1>
+    <div class="subtitle" id="status-line">ready</div>
+  </header>
+
+  <div class="meter-wrap" id="meter"></div>
+
+  <div class="timer" id="timer">00:00<span class="ms">.00</span></div>
+
+  <div class="controls">
+    <button id="btn-record">● Record</button>
+    <button id="btn-stop" disabled>■ Stop</button>
+  </div>
+
+  <div class="list-label">Recordings</div>
+  <div id="recordings"><div class="empty">No recordings yet.</div></div>
+</div>
+
+<script>
+  const NUM_BARS = 32;
+  const meter = document.getElementById('meter');
+  const timerEl = document.getElementById('timer');
+  const statusLine = document.getElementById('status-line');
+  const recordingsEl = document.getElementById('recordings');
+  const btnRecord = document.getElementById('btn-record');
+  const btnStop = document.getElementById('btn-stop');
+
+  // Build meter bars
+  const bars = Array.from({ length: NUM_BARS }, () => {
+    const b = document.createElement('div');
+    b.className = 'bar';
+    meter.appendChild(b);
+    return b;
+  });
+
+  let mediaRecorder = null;
+  let chunks = [];
+  let audioCtx = null;
+  let analyser = null;
+  let animFrame = null;
+  let startTime = null;
+  let timerFrame = null;
+  let recordCount = 0;
+
+  function formatTime(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    const m = String(Math.floor(totalSec / 60)).padStart(2, '0');
+    const s = String(totalSec % 60).padStart(2, '0');
+    const cs = String(Math.floor((ms % 1000) / 10)).padStart(2, '0');
+    return { m, s, cs };
+  }
+
+  function tickTimer() {
+    const { m, s, cs } = formatTime(Date.now() - startTime);
+    timerEl.innerHTML = `${m}:${s}<span class="ms">.${cs}</span>`;
+    timerFrame = requestAnimationFrame(tickTimer);
+  }
+
+  function drawMeter() {
+    if (!analyser) return;
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+    const step = Math.floor(data.length / NUM_BARS);
+    bars.forEach((bar, i) => {
+      const val = data[i * step] / 255;
+      const h = Math.max(3, val * 100);
+      bar.style.height = h + '%';
+      bar.style.background = val > 0.7
+        ? 'var(--danger)'
+        : val > 0.4
+          ? 'var(--accent)'
+          : 'var(--border)';
+    });
+    animFrame = requestAnimationFrame(drawMeter);
+  }
+
+  function resetMeter() {
+    bars.forEach(b => {
+      b.style.height = '3px';
+      b.style.background = 'var(--border)';
+    });
+  }
+
+  async function startRecording() {
+    try {
+      console.log("getting medai stream");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log("got media stream");
+
+      console.log("making Audio Context");
+      audioCtx = new AudioContext();
+      console.log("made audio Context");
+      const src = audioCtx.createMediaStreamSource(stream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      src.connect(analyser);
+
+      mediaRecorder = new MediaRecorder(stream);
+      chunks = [];
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = () => saveRecording(stream);
+      mediaRecorder.start();
+
+      startTime = Date.now();
+      tickTimer();
+      drawMeter();
+
+      btnRecord.disabled = true;
+      btnRecord.classList.add('recording');
+      btnStop.disabled = false;
+      statusLine.innerHTML = '<span class="pulse"></span>recording';
+    } catch (err) {
+      statusLine.textContent = 'microphone access denied';
+      console.error(err);
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(t => t.stop());
+    }
+    cancelAnimationFrame(animFrame);
+    cancelAnimationFrame(timerFrame);
+    if (audioCtx) { audioCtx.close(); audioCtx = null; analyser = null; }
+    resetMeter();
+    btnRecord.disabled = false;
+    btnRecord.classList.remove('recording');
+    btnStop.disabled = true;
+    statusLine.textContent = 'ready';
+    timerEl.innerHTML = '00:00<span class="ms">.00</span>';
+  }
+
+  function saveRecording(stream) {
+    const duration = Date.now() - startTime;
+    const blob = new Blob(chunks, { type: 'audio/webm' });
+    const url = URL.createObjectURL(blob);
+    recordCount++;
+
+    const { m, s } = formatTime(duration);
+    const label = `rec-${String(recordCount).padStart(2, '0')}`;
+
+    // Remove empty placeholder
+    const empty = recordingsEl.querySelector('.empty');
+    if (empty) empty.remove();
+
+    const clip = document.createElement('div');
+    clip.className = 'clip';
+    clip.innerHTML = `
+      <div class="clip-meta">
+        <div class="clip-name">${label}.webm</div>
+        <div class="clip-dur">${m}:${s}</div>
+      </div>
+      <audio controls src="${url}"></audio>
+      <a class="clip-dl" href="${url}" download="${label}.webm" title="Download">↓</a>
+    `;
+    recordingsEl.prepend(clip);
+  }
+
+  btnRecord.addEventListener('click', startRecording);
+  btnStop.addEventListener('click', stopRecording);
+</script>
+</body>
+</html>
