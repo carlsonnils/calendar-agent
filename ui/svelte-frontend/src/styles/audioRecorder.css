@@ -1,0 +1,101 @@
+#recorder-container {
+    --bg: hsl(0 0 96);
+    --meter-bg: #0f0f12;
+    --surface: #1a1a20;
+    --border: #2a2a35;
+    --accent: #c8a87a;
+    --accent-dim: rgba(200, 168, 122, 0.15);
+    --text: #e8e4dc;
+    --muted: #6b6870;
+    --danger: #e05c5c;
+    --danger-dim: rgba(224, 92, 92, 0.12);
+
+    gap: 0.75em;
+    flex-direction: row;
+    align-items: center;
+    background: var(--bg);
+    padding: 0.75em; 
+    border-radius: 10px;
+    background: var(--bg);
+    box-shadow: var(--base-box-shadow);
+    border: none;
+    border-radius: 10px;
+    font: inherit;
+
+    @media (prefers-reduced-motion: reduce) {
+        .bar, button, .clip-dl { 
+            transition: none;
+        }
+        .pulse {
+            animation: none;
+        }
+    }
+
+    .meter-wrap {
+        height: 2em;
+        background: var(--meter-bg);
+        border: 1px solid var(--border);
+        border-radius: 2px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 2px;
+        padding: 1px 3px;
+        margin: 0;
+        overflow: hidden;
+        min-width: 10em;
+    }
+
+    .timer {
+        font-family: 'Courier New', monospace;
+        font-size: 1em;
+        text-align: center;
+        color: black;
+    }
+
+    .timer .ms {
+        font-size: 1em;
+        color: var(--muted);
+    }
+
+    .rec-btn {
+        font-size: 0.6em;
+        padding: 1em;
+        height: fit-content;
+        margin: 0;
+    }
+
+    #quit-recording {
+        color: white;
+        background: red;
+        padding: 0.7em;
+        font-size: 0.6em;
+        height: fit-content;
+        margin: 0;
+    }
+
+    audio {
+        width: 16em;
+        height: 2em;
+        flex-shrink: 0;
+    }
+
+    .subtitle {
+        font-size: 0.5rem;
+        color: var(--muted);
+        font-family: 'Courier New', monospace;
+        letter-spacing: 0.04em;
+    }
+
+    .bar {
+      flex: 1;
+      background: var(--border);
+      border-radius: 1px;
+      transition: height 0.05s ease;
+      min-height: 3px;
+      max-height: 100%;
+    }
+}
+
+
