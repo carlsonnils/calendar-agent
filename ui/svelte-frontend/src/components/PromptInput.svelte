@@ -1,8 +1,8 @@
 <script>
-    import AudioRecorder from './AudioRecorder.svelte'
+    import AudioRecorder from "./AudioRecorder.svelte";
 
-    let text = ''
-    let showRecorder = false
+    let text = "";
+    let showRecorder = false;
 
     async function submitPrompt() {
         // hide the welcome message
@@ -26,16 +26,16 @@
         document.getElementById("loader").style.display = "inline-block";
 
         // get message response
-        const r = await fetch("api/chat", { 
+        const r = await fetch("api/chat", {
             method: "POST",
             body: JSON.stringify({
-                message: promptMessage
-            }) 
+                message: promptMessage,
+            }),
         });
 
         // catch http response error
         if (r.status === 401) {
-            window.location.href = "/login"; 
+            window.location.href = "/login";
             return;
         } else if (!r.ok) {
             throw new Error(`HTTP error: ${res.status} ${res.statusText}`);
@@ -82,18 +82,18 @@
 
     function formatDateNow() {
         const d = new Date();
-        const pad = (n) => String(n).padStart(2, '0');
+        const pad = (n) => String(n).padStart(2, "0");
         return {
-            "date": `${d.getFullYear()}-${pad(d.getMonth())}-${pad(d.getDate())}`,
-            "time": `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,
-        }
+            date: `${d.getFullYear()}-${pad(d.getMonth())}-${pad(d.getDate())}`,
+            time: `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,
+        };
     }
 
     document.getElementById("prompt-text").addEventListener("keypress", (e) => {
         if (e.getModifierState("Shift")) {
             return;
         }
-        if (e.key === 'Enter') {
+        if (e.key === "Enter") {
             e.preventDefault();
             document.getElementById("submit-prompt").click();
         }
@@ -102,23 +102,28 @@
 
 <div class="prompt">
     <div class="prompt-input">
-    {#if showRecorder}
-        <AudioRecorder on:close={() => showRecorder = false} />
-    {:else}
-        <div
-        class="prompt-text"
-        contenteditable="true"
-        bind:textContent={text}
-        on:keypress={handleKeypress}
-        ></div>
-    {/if}
+        {#if showRecorder}
+            <AudioRecorder on:close={() => (showRecorder = false)} />
+        {:else}
+            <div
+                class="prompt-text"
+                contenteditable="true"
+                bind:textContent={text}
+                on:keypress={handleKeypress}
+            ></div>
+        {/if}
     </div>
     <div class="prompt-buttons">
-    {#if !showRecorder}
-        <button id="activate-voice" on:click={() => {showRecorder = true}}>
-            <img src="/microphone.png" alt="mic" />
-        </button>
-    {/if}
+        {#if !showRecorder}
+            <button
+                id="activate-voice"
+                on:click={() => {
+                    showRecorder = true;
+                }}
+            >
+                <img src="/microphone.png" alt="mic" />
+            </button>
+        {/if}
         <button id="submit-prompt" on:click={submitPrompt()}>Submit</button>
     </div>
 </div>
