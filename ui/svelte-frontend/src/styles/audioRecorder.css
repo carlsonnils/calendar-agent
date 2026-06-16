@@ -14,7 +14,7 @@
     flex-direction: row;
     align-items: center;
     background: var(--bg);
-    padding: 0.75em; 
+    padding: 0.75em;
     border-radius: 10px;
     background: var(--bg);
     box-shadow: var(--base-box-shadow);
@@ -23,7 +23,9 @@
     font: inherit;
 
     @media (prefers-reduced-motion: reduce) {
-        .bar, button, .clip-dl { 
+        .bar,
+        button,
+        .clip-dl {
             transition: none;
         }
         .pulse {
@@ -48,7 +50,7 @@
     }
 
     .timer {
-        font-family: 'Courier New', monospace;
+        font-family: "Courier New", monospace;
         font-size: 1em;
         text-align: center;
         color: black;
@@ -84,18 +86,16 @@
     .subtitle {
         font-size: 0.5rem;
         color: var(--muted);
-        font-family: 'Courier New', monospace;
+        font-family: "Courier New", monospace;
         letter-spacing: 0.04em;
     }
 
     .bar {
-      flex: 1;
-      background: var(--border);
-      border-radius: 1px;
-      transition: height 0.05s ease;
-      min-height: 3px;
-      max-height: 100%;
+        flex: 1;
+        background: var(--border);
+        border-radius: 1px;
+        transition: height 0.05s ease;
+        min-height: 3px;
+        max-height: 100%;
     }
 }
-
-
