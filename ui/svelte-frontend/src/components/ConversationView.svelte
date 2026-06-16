@@ -12,7 +12,7 @@
     });
 </script>
 
-<div class="conversation" bind:this={convoEl}>
+<div class="conversation" bindthis={convoEl}>
     {#if messages.length === 0}
         <div class="welcome-message">
             <p>Knowledge is power</p>

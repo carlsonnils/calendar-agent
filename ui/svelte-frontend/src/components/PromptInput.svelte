@@ -1,129 +1,30 @@
 <script>
-    import AudioRecorder from "./AudioRecorder.svelte";
+    let { onSubmit } = $props();
 
     let text = "";
     let showRecorder = false;
 
-    async function submitPrompt() {
-        // hide the welcome message
-        document.querySelector("#welcome-message").classList.add("hidden");
-        // show chat begining
-        document.querySelector("#chat-begining").style.display = "flex";
-        // show the messages
-        document.querySelector("#messages").style.display = "flex";
-
-        // get prompt message
-        const promptInput = document.getElementById("prompt-text");
-        const promptMessage = promptInput.textContent;
-
-        // update user message block
-        updateBlock("user", promptMessage);
-
-        // reset prompt input
-        promptInput.textContent = "";
-
-        // show loader animation
-        document.getElementById("loader").style.display = "inline-block";
-
-        // get message response
-        const r = await fetch("api/chat", {
-            method: "POST",
-            body: JSON.stringify({
-                message: promptMessage,
-            }),
-        });
-
-        // catch http response error
-        if (r.status === 401) {
-            window.location.href = "/login";
-            return;
-        } else if (!r.ok) {
-            throw new Error(`HTTP error: ${res.status} ${res.statusText}`);
-        }
-
-        // get response data
-        const d = await r.json();
-
-        // hide loader animation
-        document.getElementById("loader").style.display = "none";
-
-        // update chat message with response
-        updateBlock("chat", d.message);
-    }
-
-    function updateBlock(t, m) {
-        // copy template block
-        const template = document.querySelector(`#${t}-block-template`);
-        const block = template.content.cloneNode(true);
-
-        // update block
-        updateBlockTime(block.querySelector(".time-block"));
-        const messageBlock = block.querySelector(".message-text");
-        switch (t) {
-            case "user":
-                messageBlock.innerHTML = m;
-                break;
-            case "chat":
-                messageBlock.innerHTML = marked.parse(m);
-                break;
-        }
-
-        // add to messages
-        document.querySelector("#messages").append(block);
-        const convo = document.querySelector("#conversation");
-        convo.scrollTop = convo.scrollHeight;
-    }
-
-    function updateBlockTime(tb) {
-        const d = formatDateNow();
-        tb.querySelector(".date-part").innerHTML = d.date;
-        tb.querySelector(".time-part").innerHTML = d.time;
-    }
-
-    function formatDateNow() {
-        const d = new Date();
-        const pad = (n) => String(n).padStart(2, "0");
-        return {
-            date: `${d.getFullYear()}-${pad(d.getMonth())}-${pad(d.getDate())}`,
-            time: `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,
-        };
-    }
-
-    document.getElementById("prompt-text").addEventListener("keypress", (e) => {
+    function handleKeyPress(e) {
         if (e.getModifierState("Shift")) {
             return;
         }
         if (e.key === "Enter") {
             e.preventDefault();
-            document.getElementById("submit-prompt").click();
+            onSubmit(text);
         }
-    });
+    }
 </script>
 
 <div class="prompt">
     <div class="prompt-input">
-        {#if showRecorder}
-            <AudioRecorder on:close={() => (showRecorder = false)} />
-        {:else}
-            <div
-                class="prompt-text"
-                contenteditable="true"
-                bind:textContent={text}
-                on:keypress={handleKeypress}
-            ></div>
-        {/if}
+        <div
+            class="prompt-text"
+            contenteditable="true"
+            bindtextContent={text}
+            onkeypress={handleKeyPress}
+        ></div>
     </div>
     <div class="prompt-buttons">
-        {#if !showRecorder}
-            <button
-                id="activate-voice"
-                on:click={() => {
-                    showRecorder = true;
-                }}
-            >
-                <img src="/microphone.png" alt="mic" />
-            </button>
-        {/if}
-        <button id="submit-prompt" on:click={submitPrompt()}>Submit</button>
+        <button id="submit-prompt" onclick={onSubmit(text)}>Submit</button>
     </div>
 </div>

@@ -1,11 +1,15 @@
 <script>
     import ConversationView from "./components/ConversationView.svelte";
     import PromptInput from "./components/PromptInput.svelte";
+    import LoginForm from "./components/LoginForm.svelte";
 
     let messages = [];
     let loading = false;
+    let loggedIn = document.cookie.split('; ').some(row => row.startsWith('is_authed='));
+    let submittedPrompt = false;
 
     async function handleSubmit(text) {
+        submittedPrompt = true;
         messages = [...messages, { type: "user", text }];
         loading = true;
 
@@ -15,7 +19,7 @@
         });
 
         if (r.status === 401) {
-            window.location.href = "/login";
+            loggedIn = false;
             return;
         }
         const d = await r.json();
@@ -26,8 +30,12 @@
 </script>
 
 <div class="app">
-    <div class="app-body">
-        <ConversationView {messages} {loading} />
-        <PromptInput on:submit={(e) => handleSubmit(e.detail)} />
-    </div>
+    {#if loggedIn || !submittedPrompt}
+        <div class="app-body">
+            <ConversationView {messages} {loading} />
+            <PromptInput onSubmit={handleSubmit} />
+        </div>
+    {:else}
+        <LoginForm {loggedIn} />        
+    {/if}
 </div>

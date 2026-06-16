@@ -8,7 +8,8 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            "/api": "http://localhost:80", // your Go server port
+            "/api": "http://localhost", // your Go server port
+            "/login": "http://localhost", // your Go server port
         },
     },
 });
