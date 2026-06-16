@@ -38,7 +38,6 @@ func Open(dsn, migrationsPath string) (*sql.DB, error) {
 	// set package level for clean up
 	DB = db
 
-	fmt.Println(migrationsPath)
 	if err := runMigrations(db, migrationsPath); err != nil {
 		return DB, fmt.Errorf("migrations: %w", err)
 	}
