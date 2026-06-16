@@ -87,9 +87,17 @@ func AuthLoginHandler(w http.ResponseWriter, r *http.Request) {
 		// Secure:   true,        // Only sent over HTTPS
 		SameSite: http.SameSiteStrictMode,
 	}
-	
-	// set the cookie and reply with status ok (200)
 	http.SetCookie(w, c)
+
+	cAuthed := &http.Cookie{
+		Name: "is_authed",
+		Value: "true",
+		Path: "/",
+		MaxAge: 31536000,
+		SameSite: http.SameSiteStrictMode,
+	}
+	http.SetCookie(w, cAuthed)
+
 	w.WriteHeader(http.StatusOK)
 }
 
