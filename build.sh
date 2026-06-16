@@ -1,3 +1,4 @@
+rm nilspcarlson
 
 if [ "$1" = "git" ]; then 
     git pull
