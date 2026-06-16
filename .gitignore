@@ -2,3 +2,6 @@ nilspcarlson
 nilspcarlson.exe
 db/calendar.db*
 **/node_modules/**
+**package-lock.json
+**/.vscode/**
+**.**
